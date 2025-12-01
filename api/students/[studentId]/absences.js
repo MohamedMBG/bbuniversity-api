@@ -1,41 +1,51 @@
 // api/students/[studentId]/absences.js
-const getDB = require('../../_db'); // depuis /api/students/...
+const getDB = require('../../_db');   // ⬅ IMPORTANT: 2x ".." (pas 3)
 
+/**
+ * GET /api/students/:studentId/absences
+ */
 module.exports = async (req, res) => {
-  // CORS basique (optionnel mais propre)
-  res.setHeader('Access-Control-Allow-Origin', '*');
-
+  // Preflight CORS
   if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(204).end();
+    res.statusCode = 204;
+    return res.end();
   }
 
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Content-Type', 'application/json');
+
   if (req.method !== 'GET') {
-    res.setHeader('Allow', ['GET']);
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.statusCode = 405;
+    return res.end(JSON.stringify({ error: 'Method not allowed' }));
   }
 
   try {
-    const db = await getDB();
-
-    // Vercel : [studentId] vient dans req.query.studentId
     const { studentId } = req.query;
 
     if (!studentId) {
-      return res.status(400).json({ error: 'studentId manquant dans l’URL' });
+      res.statusCode = 400;
+      return res.end(JSON.stringify({ error: 'studentId manquant dans l’URL' }));
     }
 
-    // ⚠️ Assure-toi que tes docs absences ont bien un champ studentId
+    const db = await getDB();
+
+    // ⚠ adapte "absences" et "studentId" aux noms de TA collection / champ
     const absences = await db
       .collection('absences')
-      .find({ studentId })
-      .sort({ date: -1 }) // les plus récentes d’abord
+      .find({ studentId })   // ex: { studentId: "uidFirebase..." }
+      .sort({ date: -1 })
       .toArray();
 
-    return res.status(200).json(absences);
+    res.statusCode = 200;
+    return res.end(JSON.stringify(absences));
   } catch (err) {
-    console.error('Error in GET /api/students/[studentId]/absences:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('GET /api/students/[studentId]/absences error:', err);
+    res.statusCode = 500;
+    return res.end(
+      JSON.stringify({ error: 'Server error', details: err.message })
+    );
   }
 };
