@@ -1,5 +1,5 @@
 // api/classes/[classId]/students.js
-const { getDB } = require('../../_db'); // chemin depuis /classes/[classId]/students.js
+const { getDB } = require('../../../_db'); // chemin depuis /classes/[classId]/students.js
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {

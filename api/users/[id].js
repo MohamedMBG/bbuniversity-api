@@ -1,5 +1,5 @@
 // api/users/[id].js
-const getDB = require('../_db');
+const getDB = require('../../_db');
 
 module.exports = async (req, res) => {
   const { id } = req.query;

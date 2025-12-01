@@ -1,5 +1,5 @@
 // api/notes/index.js
-const getDB = require("../_db");
+const getDB = require("../../_db");
 
 /**
  * POST /api/notes

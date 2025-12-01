@@ -1,5 +1,5 @@
 // api/complaints/index.js
-const getDB = require('../_db');
+const getDB = require('../../_db');
 
 module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') {

@@ -1,49 +1,57 @@
 // api/students/index.js
-const getDB = require("../_db"); // importe la fonction exportée par _db.js
+const getDB = require("../../db");
+const { ObjectId } = require("mongodb");
 
 module.exports = async (req, res) => {
-  if (req.method !== "GET") {
-    res.setHeader("Allow", ["GET"]);
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  const db = await getDB();
 
   try {
-    const db = await getDB();
+    if (req.method === "GET") {
+      const { studentId, type } = req.query;
 
-    // Tous les users avec role = "student"
-    const docs = await db
-      .collection("users")
-      .find({ role: "student" })
-      .project({
-        _id: 1,
-        uid: 1,
-        nom: 1,
-        prenom: 1,
-        email: 1,
-        matricule: 1,
-        niveau: 1,
-        filiere: 1,
-        classe: 1,
-        codeClasse: 1,
-        role: 1,
-      })
-      .toArray();
+      // 1) Si pas de studentId -> liste des étudiants
+      if (!studentId) {
+        const docs = await db
+          .collection("users")
+          .find({ role: "student" })
+          .toArray();
+        return res.status(200).json(docs);
+      }
 
-    // On formate proprement pour ton modèle Etudiant côté Android
-    const students = docs.map((s) => ({
-      uid: s.uid || s._id.toString(),
-      nom: s.nom || "",
-      prenom: s.prenom || "",
-      email: s.email || "",
-      matricule: s.matricule != null ? String(s.matricule) : "",
-      niveau: s.niveau != null ? Number(s.niveau) : 0,
-      filiere: s.filiere || "",
-      classe: s.classe || "",
-      codeClasse: s.codeClasse || "",
-      role: "student",
-    }));
+      // 2) Avec studentId + type
+      if (type === "absences") {
+        const absences = await db
+          .collection("absences")
+          .find({ studentUserId: studentId })
+          .sort({ date: -1 })
+          .toArray();
+        return res.status(200).json(absences);
+      }
 
-    return res.status(200).json(students);
+      if (type === "subjects") {
+        const notes = await db
+          .collection("student_subjects")
+          .find({ studentId })
+          .sort({ lastUpdate: -1 })
+          .toArray();
+        return res.status(200).json(notes);
+      }
+
+      if (type === "complaints") {
+        const complaints = await db
+          .collection("complaints")
+          .find({ studentId })
+          .sort({ dateFiled: -1 })
+          .toArray();
+        return res.status(200).json(complaints);
+      }
+
+      // type inconnu
+      return res.status(400).json({ error: "Invalid type parameter" });
+    }
+
+    res.setHeader("Allow", ["GET"]);
+    return res.status(405).json({ error: "Method not allowed" });
   } catch (err) {
     console.error("Error in /api/students:", err);
     return res.status(500).json({ error: "Internal server error" });
