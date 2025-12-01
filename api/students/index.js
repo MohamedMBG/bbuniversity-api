@@ -1,23 +1,22 @@
 // api/students/index.js
-const { MongoClient } = require("mongodb");
-
-const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
+const getDB = require("../_db"); // importe la fonction exportée par _db.js
 
 module.exports = async (req, res) => {
   if (req.method !== "GET") {
+    res.setHeader("Allow", ["GET"]);
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    await client.connect();
-    const db = client.db(process.env.MONGODB_DB);
+    const db = await getDB();
 
+    // Tous les users avec role = "student"
     const docs = await db
       .collection("users")
-      .find({ role: "student" })          // 💥 ICI : filtre sur role = "student"
+      .find({ role: "student" })
       .project({
         _id: 1,
+        uid: 1,
         nom: 1,
         prenom: 1,
         email: 1,
@@ -26,27 +25,27 @@ module.exports = async (req, res) => {
         filiere: 1,
         classe: 1,
         codeClasse: 1,
+        role: 1,
       })
       .toArray();
 
+    // On formate proprement pour ton modèle Etudiant côté Android
     const students = docs.map((s) => ({
-      uid: s._id.toString(),
+      uid: s.uid || s._id.toString(),
       nom: s.nom || "",
       prenom: s.prenom || "",
       email: s.email || "",
-      matricule: s.matricule || "",     // ou String(s.matricule || "")
-      niveau: Number(s.niveau || 0),
+      matricule: s.matricule != null ? String(s.matricule) : "",
+      niveau: s.niveau != null ? Number(s.niveau) : 0,
       filiere: s.filiere || "",
       classe: s.classe || "",
-      classeCode: s.codeClasse || "",
+      codeClasse: s.codeClasse || "",
       role: "student",
     }));
 
     return res.status(200).json(students);
   } catch (err) {
-    console.error("Error fetching students:", err);
+    console.error("Error in /api/students:", err);
     return res.status(500).json({ error: "Internal server error" });
-  } finally {
-    await client.close();
   }
 };
