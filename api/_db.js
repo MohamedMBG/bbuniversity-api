@@ -14,13 +14,12 @@ if (!dbName) {
 let client;
 let clientPromise;
 
-// Reuse the same client between invocations (important on Vercel)
+// Reuse same client between invocations in Vercel
 if (!global._mongoClientPromise) {
   client = new MongoClient(uri, {
     serverSelectionTimeoutMS: 10000,
-    // These TLS options help with the SSL error you're seeing
     tls: true,
-    tlsAllowInvalidCertificates: true
+    tlsAllowInvalidCertificates: true, // ok for this project, removes TLS headache
   });
   global._mongoClientPromise = client.connect();
 }

@@ -1,5 +1,5 @@
-// api/students/[studentId]/absences.js
-const getDB = require('../../_db');
+// api/matieres/index.js
+const getDB = require('../_db');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
@@ -9,18 +9,14 @@ module.exports = async (req, res) => {
 
   try {
     const db = await getDB();
-    const { studentId } = req.query; // here it's studentUserId (email/uid)
 
-    const absences = await db
-      .collection('absences')
-      .find({ studentUserId: studentId })
-      .toArray();
+    const matieres = await db.collection('matieres').find({}).toArray();
 
     res.setHeader('Content-Type', 'application/json');
     res.statusCode = 200;
-    res.end(JSON.stringify(absences));
+    res.end(JSON.stringify(matieres));
   } catch (err) {
-    console.error('Error in /api/students/[studentId]/absences:', err);
+    console.error('Error in /api/matieres:', err);
     res.statusCode = 500;
     res.end(JSON.stringify({ message: 'Server error', error: err.message }));
   }

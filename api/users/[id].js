@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
 
   try {
     const db = await getDB();
-    const { id } = req.query;
+    const { id } = req.query; // _id == uid
 
     const user = await db.collection('users').findOne({ _id: id });
 

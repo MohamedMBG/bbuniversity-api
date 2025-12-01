@@ -1,3 +1,4 @@
+// api/classes/[classId]/timetables.js
 const getDB = require('../../_db');
 
 module.exports = async (req, res) => {
@@ -10,14 +11,18 @@ module.exports = async (req, res) => {
     const db = await getDB();
     const { classId } = req.query;
 
-    const timetables = await db
+    const timetable = await db
       .collection('timetables')
-      .find({ classId })
-      .toArray();
+      .findOne({ _id: classId });
+
+    if (!timetable) {
+      res.statusCode = 404;
+      return res.end(JSON.stringify({ message: 'No timetable found' }));
+    }
 
     res.setHeader('Content-Type', 'application/json');
     res.statusCode = 200;
-    res.end(JSON.stringify(timetables));
+    res.end(JSON.stringify(timetable));
   } catch (err) {
     console.error('Error in /api/classes/[classId]/timetables:', err);
     res.statusCode = 500;

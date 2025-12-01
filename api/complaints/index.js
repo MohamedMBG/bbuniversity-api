@@ -1,3 +1,4 @@
+// api/complaints/index.js
 const getDB = require('../_db');
 
 module.exports = async (req, res) => {
@@ -24,7 +25,8 @@ module.exports = async (req, res) => {
     req.on('data', chunk => { body += chunk.toString(); });
     req.on('end', async () => {
       const data = JSON.parse(body || '{}');
-      data.createdAt = new Date();
+      data.dateFiled = new Date();
+      data.status = data.status || 'pending';
 
       const result = await db.collection('complaints').insertOne(data);
 
