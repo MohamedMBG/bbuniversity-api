@@ -1,4 +1,4 @@
-// api/matieres/index.js
+// api/classes/index.js
 const getDB = require('../_db');
 
 module.exports = async (req, res) => {
@@ -11,38 +11,25 @@ module.exports = async (req, res) => {
     return res.end();
   }
 
-  const db = await getDB();
-
-  if (req.method === 'GET') {
-    try {
-      const matieres = await db.collection('matieres').find({}).toArray();
-      res.setHeader('Content-Type', 'application/json');
-      res.statusCode = 200;
-      return res.end(JSON.stringify(matieres));
-    } catch (err) {
-      console.error('Error in GET /api/matieres:', err);
-      res.statusCode = 500;
-      return res.end(JSON.stringify({ message: 'Server error', error: err.message }));
-    }
-  }
-
   if (req.method === 'POST') {
     try {
+      const db = await getDB();
+
       let body = '';
       req.on('data', chunk => { body += chunk.toString(); });
       req.on('end', async () => {
         const data = JSON.parse(body || '{}');
 
-        const nom = data.nom;
-        if (!nom) {
+        const name = data.name;
+        if (!name) {
           res.statusCode = 400;
-          return res.end(JSON.stringify({ message: 'nom is required' }));
+          return res.end(JSON.stringify({ message: 'name is required' }));
         }
 
-        // simple : on met _id = nom pour l’instant
-        if (!data._id) data._id = nom;
+        // on utilise le nom comme _id (comme dans ton Firestore)
+        if (!data._id) data._id = name;
 
-        const result = await db.collection('matieres').insertOne(data);
+        const result = await db.collection('classes').insertOne(data);
 
         res.setHeader('Content-Type', 'application/json');
         res.statusCode = 201;
@@ -52,7 +39,7 @@ module.exports = async (req, res) => {
         }));
       });
     } catch (err) {
-      console.error('Error in POST /api/matieres:', err);
+      console.error('Error in POST /api/classes:', err);
       res.statusCode = 500;
       return res.end(JSON.stringify({ message: 'Server error', error: err.message }));
     }
