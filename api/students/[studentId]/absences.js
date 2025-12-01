@@ -1,15 +1,4 @@
-// api/students/[studentId]/absences.js
-const { MongoClient } = require('mongodb');
-
-let client;
-
-async function getDB() {
-  if (!client) {
-    client = new MongoClient(process.env.MONGO_URI);
-    await client.connect();
-  }
-  return client.db(process.env.DB_NAME);
-}
+const getDB = require('../../_db');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
@@ -30,8 +19,8 @@ module.exports = async (req, res) => {
     res.statusCode = 200;
     res.end(JSON.stringify(absences));
   } catch (err) {
-    console.error(err);
+    console.error('Error in /api/students/[studentId]/absences:', err);
     res.statusCode = 500;
-    res.end(JSON.stringify({ message: 'Server error' }));
+    res.end(JSON.stringify({ message: 'Server error', error: err.message }));
   }
 };

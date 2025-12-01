@@ -1,15 +1,4 @@
-// api/classes/[classId]/timetables.js
-const { MongoClient } = require('mongodb');
-
-let client;
-
-async function getDB() {
-  if (!client) {
-    client = new MongoClient(process.env.MONGO_URI);
-    await client.connect();
-  }
-  return client.db(process.env.DB_NAME);
-}
+const getDB = require('../../_db');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
@@ -30,8 +19,8 @@ module.exports = async (req, res) => {
     res.statusCode = 200;
     res.end(JSON.stringify(timetables));
   } catch (err) {
-    console.error(err);
+    console.error('Error in /api/classes/[classId]/timetables:', err);
     res.statusCode = 500;
-    res.end(JSON.stringify({ message: 'Server error' }));
+    res.end(JSON.stringify({ message: 'Server error', error: err.message }));
   }
 };

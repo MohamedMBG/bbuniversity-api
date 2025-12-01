@@ -1,19 +1,7 @@
-// api/complaints/index.js
-const { MongoClient } = require('mongodb');
-
-let client;
-
-async function getDB() {
-  if (!client) {
-    client = new MongoClient(process.env.MONGO_URI);
-    await client.connect();
-  }
-  return client.db(process.env.DB_NAME);
-}
+const getDB = require('../_db');
 
 module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') {
-    // CORS preflight
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -32,7 +20,6 @@ module.exports = async (req, res) => {
   try {
     const db = await getDB();
 
-    // Parse body manually
     let body = '';
     req.on('data', chunk => { body += chunk.toString(); });
     req.on('end', async () => {
@@ -45,8 +32,8 @@ module.exports = async (req, res) => {
       res.end(JSON.stringify({ _id: result.insertedId, ...data }));
     });
   } catch (err) {
-    console.error(err);
+    console.error('Error in /api/complaints:', err);
     res.statusCode = 500;
-    res.end(JSON.stringify({ message: 'Server error' }));
+    res.end(JSON.stringify({ message: 'Server error', error: err.message }));
   }
 };
