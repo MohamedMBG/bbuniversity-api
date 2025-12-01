@@ -1,8 +1,8 @@
 // api/students/[studentId]/notes.js
-const getDB = require('../../_db');
+const getDB = require('../../../_db');  // <= 3 niveaux !!
 
 module.exports = async (req, res) => {
-  // CORS basique
+  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   if (req.method === 'OPTIONS') {
@@ -19,16 +19,27 @@ module.exports = async (req, res) => {
   try {
     const db = await getDB();
 
-    // Vercel injecte [studentId] dans req.query.studentId
-    const { studentId } = req.query;
+    // Récupération robuste du studentId
+    let studentId = null;
+
+    // 1) Vercel met souvent les params dynamiques dans req.query
+    if (req.query && req.query.studentId) {
+      studentId = req.query.studentId;
+    } else {
+      // 2) fallback: on découpe l'URL
+      // /api/students/XXX/notes
+      const url = new URL(req.url, `http://${req.headers.host}`);
+      const parts = url.pathname.split('/'); // ["", "api", "students", "{id}", "notes"]
+      if (parts.length >= 5) {
+        studentId = parts[3];
+      }
+    }
 
     if (!studentId) {
       return res.status(400).json({ error: 'studentId manquant dans l’URL' });
     }
 
-    // ⚠ Ici on suppose que dans la collection "notes",
-    // tu as bien un champ "studentId" qui contient la même valeur
-    // que celle envoyée par Android (uid ou email, mais cohérent partout).
+    // Recherche des notes pour cet étudiant
     const notes = await db
       .collection('notes')
       .find({ studentId })
@@ -38,6 +49,6 @@ module.exports = async (req, res) => {
     return res.status(200).json(notes);
   } catch (err) {
     console.error('Error in GET /api/students/[studentId]/notes:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error', details: String(err) });
   }
 };
