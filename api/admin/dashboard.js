@@ -29,7 +29,7 @@ module.exports = async (req, res) => {
       db.collection('users').countDocuments({ role: 'student' }),
       db.collection('users').countDocuments({ role: 'professor' }),
       db.collection('absences').countDocuments({}),
-      db.collection('student_subjects')    
+      db.collection('notes')    
         .find({})
         .sort({ lastUpdate: -1 })
         .limit(3)
