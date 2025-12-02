@@ -1,5 +1,5 @@
 // api/students/[studentId]/absences.js
-const getDB = require('../../_db');
+const getDB = require('../../../_db');
 
 /**
  * GET  /api/students/:studentId/absences
