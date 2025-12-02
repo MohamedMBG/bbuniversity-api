@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
 
         // Si uid est présent, on le force comme _id (comme tes autres users)
         if (data.uid && !data._id) {
-          data._id = data.uid;
+          data._id = data.email;
         }
 
         data.createdAt = new Date();
