@@ -20,9 +20,9 @@ module.exports = async (req, res) => {
       req.on('end', async () => {
         const data = JSON.parse(body || '{}');
 
-        // Si uid est présent, on le force comme _id (comme tes autres users)
+        // ✅ Si uid est présent, on l'utilise comme _id
         if (data.uid && !data._id) {
-          data._id = data.email;
+          data._id = data.uid;
         }
 
         data.createdAt = new Date();
@@ -42,7 +42,6 @@ module.exports = async (req, res) => {
       return res.end(JSON.stringify({ message: 'Server error', error: err.message }));
     }
   } else {
-    // Si quelqu’un fait GET /api/users → 405, pas 404
     res.statusCode = 405;
     return res.end('Method Not Allowed');
   }

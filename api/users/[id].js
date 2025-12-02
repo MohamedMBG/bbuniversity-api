@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
   if (req.method === 'GET') {
     try {
       const db = await getDB();
-      const user = await db.collection('users').findOne({ _id: id });
+      const user = await db.collection('users').findOne({ _id: id }); // ✅ id = uid
 
       if (!user) {
         res.statusCode = 404;
@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
 
       res.setHeader('Content-Type', 'application/json');
       res.statusCode = 200;
-      return res.end(JSON.stringify(user));   // <- inclut password pour l’admin
+      return res.end(JSON.stringify(user));
     } catch (err) {
       console.error('Error in GET /api/users/[id]:', err);
       res.statusCode = 500;
@@ -44,8 +44,7 @@ module.exports = async (req, res) => {
       req.on('end', async () => {
         const updates = JSON.parse(body || '{}');
 
-        // on ne permet pas de changer _id
-        delete updates._id;
+        delete updates._id; // on ne laisse pas changer l'id
 
         const result = await db.collection('users').updateOne(
           { _id: id },
@@ -65,8 +64,7 @@ module.exports = async (req, res) => {
       return res.end(JSON.stringify({ message: 'Server error', error: err.message }));
     }
   } else {
-    // méthode ni GET ni PUT
     res.statusCode = 405;
-    return res.end(JSON.stringify({ message: 'Method Not Allowed' }));
+    return res.end('Method Not Allowed');
   }
 };

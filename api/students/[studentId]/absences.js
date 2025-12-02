@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
 
       const raw = await db
         .collection('absences')
-        .find({ studentUserId: studentId })
+        .find({ studentUserId: studentId })  // ✅ UID
         .sort({ date: -1 })
         .toArray();
 
@@ -41,7 +41,6 @@ module.exports = async (req, res) => {
         studentEmail: a.studentEmail || null,
         matiere: a.matiere || null,
         justifiee: !!a.justifiee,
-        // on renvoie une string simple (YYYY-MM-DD) ou ce qui est déjà stocké
         date:
           a.date instanceof Date
             ? a.date.toISOString().substring(0, 10)
@@ -100,7 +99,7 @@ module.exports = async (req, res) => {
         }
 
         const doc = {
-          studentUserId: studentId,             // UID Firebase
+          studentUserId: studentId,             // ✅ UID Firebase
           studentEmail: studentEmail || null,
           matiere: matiere,
           justifiee: !!justifiee,
